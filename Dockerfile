@@ -1,13 +1,24 @@
 FROM debian:jessie
 
-MAINTAINER Alt Three <support@alt-three.com>
-
+ARG BUILD_DATE
+ARG VCS_REF
 ARG cachet_ver
 ENV cachet_ver ${cachet_ver:-master}
-
 ENV PG_MAJOR 9.5
 ENV NGINX_VERSION 1.10.1-1~jessie
 ENV COMPOSER_VERSION 1.2.1
+
+LABEL org.label-schema.build-date=$BUILD_DATE \
+			org.label-schema.name="Cachet" \
+			org.label-schema.description="Cachet is a beautiful and powerful open source status page system." \
+			org.label-schema.url="http://andradaprieto.es" \
+			org.label-schema.vcs-ref=$VCS_REF \
+			org.label-schema.vcs-url="https://github.com/jandradap/cachet" \
+			org.label-schema.vendor="Jorge Andrada Prieto" \
+			org.label-schema.version=$cachet_ver \
+			org.label-schema.schema-version="1.0" \
+			maintainer="Jorge Andrada Prieto <jandradap@gmail.com>" \
+			org.label-schema.docker.cmd="docker run --name=larp -p 8080:80  -h larp -d jorgeandrada/larp"
 
 RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
 RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62
@@ -39,9 +50,9 @@ COPY conf/php-fpm-pool.conf /etc/php5/fpm/pool.d/www.conf
 COPY conf/supervisord.conf /etc/supervisor/supervisord.conf
 COPY conf/nginx-site.conf /etc/nginx/conf.d/default.conf
 
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf
-RUN mkdir -p /var/www/html && \
-    chown -R www-data /var/www
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf && \
+  mkdir -p /var/www/html && \
+  chown -R www-data /var/www
 
 COPY conf/crontab /etc/cron.d/artisan-schedule
 COPY entrypoint.sh /sbin/entrypoint.sh
